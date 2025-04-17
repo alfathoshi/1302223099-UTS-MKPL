@@ -2,6 +2,12 @@ package lib;
 
 public class TaxFunction {
 
+	// Membuat variabel constant untuk menampung nilai yang tidak jelas kegunaannya
+	private static final int BASIC_NON_TAXABLE_INCOME = 54000000;
+    private static final int MARRIED_ADDITION = 4500000;
+    private static final int CHILD_ADDITION_PER_CHILD = 1500000;
+    private static final int MAX_CHILDREN_COUNT = 3;
+    private static final double TAX_RATE = 0.05;
 	
 	/**
 	 * Fungsi untuk menghitung jumlah pajak penghasilan pegawai yang harus dibayarkan setahun.
@@ -14,30 +20,31 @@ public class TaxFunction {
 	 * 
 	 */
 	
-	
-	public static int calculateTax(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isMarried, int numberOfChildren) {
+	// Menganti variabel isMarried dengan isSingle karena kesalahan logic
+	public static int calculateTax(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isSingle, int numberOfChildren) {
 		
-		int tax = 0;
-		
+		// Melempar error agar fungsi berhenti
 		if (numberOfMonthWorking > 12) {
-			System.err.println("More than 12 month working per year");
-		}
-		
-		if (numberOfChildren > 3) {
-			numberOfChildren = 3;
-		}
-		
-		if (isMarried) {
-			tax = (int) Math.round(0.05 * (((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - (54000000 + 4500000 + (numberOfChildren * 1500000))));
-		}else {
-			tax = (int) Math.round(0.05 * (((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - 54000000));
-		}
-		
-		if (tax < 0) {
-			return 0;
-		}else {
-			return tax;
-		}
+            throw new IllegalArgumentException("Number of working months cannot exceed 12.");
+        }
+
+		// Membuat variabel untuk menampung nilai default
+        int totalIncome = (monthlySalary + otherMonthlyIncome) * numberOfMonthWorking;
+        int nonTaxableIncome = BASIC_NON_TAXABLE_INCOME;
+
+        // Mengecek isSingle, jika tidak maka akan akan ditambah pajaknya
+        if (!isSingle) {
+            nonTaxableIncome += MARRIED_ADDITION;
+        }
+
+        // Menambahkan pajak sesuai dengan jumlah anak
+        nonTaxableIncome += Math.min(numberOfChildren, MAX_CHILDREN_COUNT) * CHILD_ADDITION_PER_CHILD;
+
+        // Membuat final variabel untuk kalkulasi total
+        int taxableIncome = totalIncome - deductible - nonTaxableIncome;
+        int tax = (int) Math.round(TAX_RATE * Math.max(taxableIncome, 0));
+
+        return tax;
 			 
 	}
 	
